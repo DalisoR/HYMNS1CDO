@@ -1,0 +1,2812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1 CDO HYMNS</title>
+    <!-- Tailwind CSS CDN for easy styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter for a clean look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons (favorites, close, etc.) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Custom CSS variables for theme and font size */
+        :root {
+            --background-color: #f8fafc; /* light blue-grey for light mode */
+            --text-color: #1e293b;       /* dark blue-grey for light mode */
+            --primary-color: #6366f1;   /* Indigo 500 */
+            --secondary-background: #e2e8f0; /* lighter blue-grey */
+            --border-color: #cbd5e1;    /* Slate 300 */
+            --font-size-base: 1rem;
+            --font-size-lg: 1.125rem;
+            --font-size-xl: 1.25rem;
+        }
+
+        /* Dark mode variables */
+        body.dark-mode {
+            --background-color: #1e293b; /* dark blue-grey for dark mode */
+            --text-color: #f8fafc;       /* light blue-grey for dark mode */
+            --primary-color: #818cf8;   /* Indigo 400 */
+            --secondary-background: #334155; /* Slate 700 */
+            --border-color: #475569;    /* Slate 600 */
+        }
+
+        /* Apply variables to body and elements */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        /* Styling for the hymn item cards */
+        .hymn-card {
+            background-color: var(--secondary-background);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .hymn-card:hover {
+            background-color: var(--border-color);
+        }
+
+        .hymn-card h3 {
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 0.25rem;
+        }
+
+        .hymn-card p {
+            font-size: var(--font-size-base);
+            color: var(--text-color);
+            opacity: 0.8;
+        }
+
+        .favorite-btn {
+            color: #cbd5e1; /* Gray for unfavorited */
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .favorite-btn.favorited {
+            color: #ef4444; /* Red for favorited */
+        }
+
+        /* Modal styling */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none; /* Allows clicks through when hidden */
+        }
+
+        .modal.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background-color: var(--background-color);
+            margin: auto;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            width: 90%;
+            max-width: 700px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.1);
+            position: relative;
+            max-height: 90vh; /* Max height for scrolling */
+            overflow-y: auto; /* Enable scrolling within the modal content */
+            border: 1px solid var(--border-color);
+        }
+
+        .close-btn {
+            color: var(--text-color);
+            font-size: 1.5rem;
+            position: absolute;
+            top: 0.75rem;
+            right: 1rem;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .close-btn:hover {
+            color: var(--primary-color);
+        }
+
+        .modal-title {
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        .modal-lyrics {
+            font-size: var(--font-size-base); /* This will be controlled by JS for font size adjustment */
+            white-space: pre-wrap; /* Preserve line breaks */
+            line-height: 1.6;
+        }
+
+        /* Custom range input styling */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            background: var(--border-color);
+            outline: none;
+            border-radius: 5px;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        input[type="range"]:hover {
+            opacity: 1;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            border: 2px solid var(--background-color);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            border: 2px solid var(--background-color);
+        }
+
+        /* Styles for small screens */
+        @media (max-width: 640px) {
+            .container {
+                padding: 0.5rem;
+            }
+            .hymn-card h3 {
+                font-size: var(--font-size-base);
+            }
+            .hymn-card p {
+                font-size: 0.875rem; /* text-sm */
+            }
+            .favorite-btn {
+                font-size: 1rem;
+            }
+            .modal-content {
+                padding: 1rem;
+            }
+            .modal-title {
+                font-size: var(--font-size-lg);
+            }
+            .close-btn {
+                font-size: 1.25rem;
+                top: 0.5rem;
+                right: 0.75rem;
+            }
+        }
+    </style>
+    <link rel="icon" type="image/png" href="favicon.png">
+</head>
+<body class="selection:bg-indigo-300 selection:text-white dark:selection:bg-indigo-700 dark:selection:text-white">
+    <div class="container py-8">
+        <h1 class="text-4xl font-bold text-center mb-8 text-primary-color">1 CDO HYMNS</h1>
+
+        <!-- Search Bar and Controls -->
+        <div class="bg-secondary-background p-4 rounded-lg shadow-md mb-6 border border-border-color">
+            <input type="text" id="searchBar" placeholder="Search by number, title, or lyrics..."
+                   class="w-full p-3 rounded-md mb-4 bg-background-color text-text-color border border-border-color focus:outline-none focus:ring-2 focus:ring-primary-color placeholder-text-color/70">
+
+            <div class="flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0 sm:space-x-4">
+                <!-- Font Size Adjuster -->
+                <div class="flex items-center w-full sm:w-1/2">
+                    <label for="fontSize" class="text-sm font-medium mr-3 min-w-[70px]">Font Size:</label>
+                    <input type="range" id="fontSize" min="0.8" max="1.5" step="0.1" value="1"
+                           class="flex-grow">
+                    <span id="fontSizeValue" class="ml-3 text-sm font-semibold min-w-[30px] text-right">1.0x</span>
+                </div>
+
+                <!-- Dark Mode Toggle -->
+                <div class="flex items-center w-full sm:w-1/2 justify-center sm:justify-end">
+                    <span class="text-sm font-medium mr-3">Dark Mode:</span>
+                    <label for="darkModeToggle" class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="darkModeToggle" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-color rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:border-gray-300 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-color"></div>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hymn List -->
+        <div id="hymnList" class="grid gap-4">
+            <!-- Hymns will be loaded here by JavaScript -->
+        </div>
+
+        <!-- No Results Message -->
+        <div id="noResults" class="text-center text-text-color/70 mt-8 hidden">
+            No hymns found matching your search.
+        </div>
+    </div>
+
+    <!-- Hymn Detail Modal -->
+    <div id="hymnModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeModalBtn">&times;</span>
+            <h2 id="modalTitle" class="modal-title"></h2>
+            <p id="modalLyrics" class="modal-lyrics"></p>
+        </div>
+    </div>
+
+    <script>
+        // Full text content from HYMNBOOK.txt
+        const fullHymnText = `#1 
+Title: I Surrender All
+Lyrics:
+1. All to Jesus I surrender,
+All to him I freely give:
+I will ever love and trust him,
+In his presence daily live;
+
+<b>I Surrender all: I surrender all:
+All to Thee my blessed saviour,
+I surrender all.</b>
+
+2. All to Jesus I surrender,
+Humbly at his feet I bow;
+Worldly pleasures all forsaken,
+Take me, Jesus, take me now;
+
+3. All to Jesus I surrender,
+Make me Saviour wholly Thine:
+Let me feel the Holy Spirit,
+Truly know that thou art mine;
+
+4. All to Jesus I surrender.
+Now I feel the sacred flame.
+O the joy of full salvation!
+Glory, glory, to his name!
+
+#2.
+Title: I have decided.
+Lyrics:
+1. I have decided to follow Jesus::
+No turning back, no turning back.
+
+2. The cross before me, the world behind me::
+No turning back, no turning back.
+
+3. Though no one joins me, still I will follow::
+No turning back, no turning back
+
+#3
+Title: Rejoice In The Lord Always
+Lyrics:
+Rejoice in the lord always
+And again I say rejoice.
+Rejoice in the lord always
+And again I say rejoice.
+Rejoice, rejoice.
+And again I say rejoice,
+Rejoice, rejoice,
+And again I say rejoice
+
+#4
+Title: When I Survey the Wondrous Cross
+Lyrics:
+1 When I survey the wondrous cross
+on which the Prince of glory died,
+my richest gain I count but loss,
+and pour contempt on all my pride.
+
+2 Forbid it, Lord, that I should boast
+save in the death of Christ, my God!
+All the vain things that charm me most,
+I sacrifice them through his blood.
+
+3 See, from his head, his hands, his feet,
+sorrow and love flow mingled down.
+Did e'er such love and sorrow meet,
+or thorns compose so rich a crown?
+
+4 Were the whole realm of nature mine,
+that were a present far too small.
+Love so amazing, so divine,
+demands my soul, my life, my all.
+
+#5
+Title: Rock of ages
+Lyrics:
+1.Rock of Ages, cleft for me,
+Let me hide myself in Thee;
+Let the water and the blood,
+From Thy riven side which flowed,
+Be of sin the double cure,
+Save me from its guilt and power.
+
+2.Not the labor of my hands
+Can fulfil Thy law’s demands;
+Could my zeal no respite know,
+Could my tears forever flow,
+All could never sin erase,
+Thou must save, and save by grace.
+
+3.Nothing in my hands I bring,
+Simply to Thy cross I cling;
+Naked, come to Thee for dress,
+Helpless, look to Thee for grace:
+Foul, I to the fountain fly,
+Wash me, Savior, or I die.
+
+4.While I draw this fleeting breath,
+When mine eyes shall close in death,
+When I soar to worlds unknown,
+See Thee on Thy judgment throne,
+Rock of Ages, cleft for me,
+Let me hide myself in Thee.
+
+#6
+Title: To God be the glory
+Lyrics
+1.To God be the glory, great things He hath done,
+So loved He the world that He gave us His Son,
+Who yielded His life our redemption to win,
+And opened the life-gate that all may go in.
+ 
+<b>Praise the Lord, praise the Lord,
+Let the earth hear His voice;
+Praise the Lord, praise the Lord,
+Let the people rejoice;
+Oh, come to the Father, through Jesus the Son,
+And give Him the glory; great things He hath done.</b>
+
+2.Oh, perfect redemption, the purchase of blood,
+To every believer the promise of God;
+The vilest offender who truly believes,
+That moment from Jesus a pardon receives.
+
+3.Great things He hath taught us, great things He hath done,
+And great our rejoicing through Jesus the Son;
+But purer, and higher, and greater will be
+Our wonder, our transport when Jesus we see.
+
+#7
+Title: Blessed Assurance
+Lyrics:
+1.Blessed assurance, Jesus is mine;
+Oh, what a foretaste of glory divine!
+Heir of salvation, purchase of God,
+Born of His Spirit, washed in His blood.
+ 
+<b>This is my story, this is my song,
+Praising my Savior all the day long.
+This is my story, this is my song,
+Praising my Savior all the day long.</b>
+
+2.Perfect submission, perfect delight,
+Visions of rapture now burst on my sight;
+Angels descending, bring from above
+Echoes of mercy, whispers of love.
+
+3.Perfect submission, all is at rest,
+I in my Savior am happy and blest;
+Watching and waiting, looking above,
+Filled with His goodness, lost in His love.
+
+#8
+Title: Pass me not, O Gentle saviour
+Lyrics:
+
+1.Pass me not, O gentle Savior,
+  Hear my humble cry;
+While on others Thou art calling,
+  Do not pass me by.
+ 
+<b>Savior, Savior,
+Hear my humble cry;
+While on others Thou art calling,
+Do not pass me by.</b>
+
+2.Let me at Thy throne of mercy
+  Find a sweet relief;
+Kneeling there in deep contrition,
+  Help my unbelief.
+
+3.Trusting only in Thy merit,
+  Would I seek Thy face;
+Heal my wounded, broken spirit,
+  Save me by Thy grace.
+
+4.Thou the spring of all my comfort,
+  More than life to me;
+Whom have I on earth beside Thee?
+  Whom in heaven but Thee?
+
+#9
+Title: Trust and Obey
+Lyrics:
+1.When we walk with the Lord
+In the light of His Word,
+What a glory He sheds on our way!
+While we do His good will,
+He abides with us still,
+And with all who will trust and obey.
+
+<b>Trust and obey,
+For there’s no other way
+To be happy in Jesus,
+But to trust and obey.</b>
+
+2.Not a shadow can rise,
+Not a cloud in the skies,
+But His smile quickly drives it away;
+Not a doubt nor a fear,
+Not a sigh nor a tear,
+Can abide while we trust and obey.
+
+3.Not a burden we bear,
+Not a sorrow we share,
+But our toil He doth richly repay;
+Not a grief nor a loss,
+Not a frown nor a cross,
+But is blest if we trust and obey.
+
+4.But we never can prove
+The delights of His love
+Until all on the altar we lay;
+For the favor He shows,
+And the joy He bestows,
+Are for them who will trust and obey.
+
+5.Then in fellowship sweet
+We will sit at His feet,
+Or we’ll walk by His side in the way;
+What He says we will do,
+Where He sends we will go—
+Never fear, only trust and obey.
+
+#10
+Title: Be Still and Know That I Am God
+Lyrics:
+
+1.Be still and know that I am God [×3]
+
+2.I am the Lord that healeth thee [×3]
+
+3.In thee, O Lord, I put my trust [×3]
+
+4.Whom shall I send? O Lord, send me [×3]
+
+#11
+Title: Stand Up! Stand Up for Jesus
+Lyrics:
+
+1.Stand up! Stand up for Jesus!
+Ye soldiers of the cross:
+Lift high His royal banner,
+It must not suffer loss.
+From victory unto victory
+His army shall He lead,
+Till every foe is vanquished
+And Christ is Lord indeed.
+
+2.Stand up! Stand up for Jesus!
+The trumpet call obey:
+Forth to the mighty conflict
+In this His glorious day.
+Ye that are men now serve Him
+Against unnumbered foes;
+Let courage rise with danger,
+And strength to strength oppose.
+
+3.Stand up! Stand up for Jesus!
+Stand in His strength alone:
+The arm of flesh will fail you—
+Ye dare not trust your own.
+Put on the gospel armour,
+And watching unto prayer,
+Where duty calls or danger,
+Be never wanting there.
+
+4.Stand up! Stand up for Jesus!
+The strife will not be long;
+This day the noise of battle,
+The next the victor’s song.
+To him that overcometh
+A crown of life shall be;
+He with the King of glory
+Shall reign eternally.
+
+#12
+Title: Amazing Grace
+Lyrics:
+
+1. Amazing grace, how sweet the sound
+That saved a wretch like me.
+I once was lost, but now I’m found,
+Was blind but now I see.
+
+2.I was grace that taught my heart to fear,
+And grace my fears relieved;
+How precious did that grace appear
+The hour I first believed.
+
+3. Through many dangers, toils and snares
+I have already come.
+’Tis grace hath brought me safe thus far,
+And grace will lead me home.
+
+4. When we’ve been there ten thousand years,
+Bright shining as the sun,
+We’ve no less days to sing God’s praise
+Than when we first begun.
+
+#13
+Title: What a Friend We Have in Jesus
+Lyrics:
+
+1.What a friend we have in Jesus,
+All our sins and griefs to bear!
+What a privilege to carry
+Everything to God in prayer!
+O what peace we often forfeit,
+O what needless pain we bear,
+All because we do not carry
+Everything to God in prayer.
+
+2.Have we trials and temptations?
+Is there trouble anywhere?
+We should never be discouraged;
+Take it to the Lord in prayer.
+Can we find a friend so faithful,
+Who will all our sorrows share?
+Jesus knows our every weakness;
+Take it to the Lord in prayer.
+
+3.Are we weak and heavy-laden,
+Cumbered with a load of care?
+Precious Saviour, still our refuge—
+Take it to the Lord in prayer!
+
+4.Do thy friends despise, forsake thee?
+Take it to the Lord in prayer;
+In His arms He’ll take and shield thee,
+Thou wilt find a solace there.
+
+#14
+Title: O Happy Day
+Lyrics:
+1. O happy day! That fixed my choice
+On Thee, my Saviour and my God;
+Well may this glowing heart rejoice,
+And tell its rapture all abroad.
+
+<b>Happy day, happy day,
+When Jesus washed my sins away!
+He taught me how to watch and pray,
+And live rejoicing every day;
+Happy day, happy day,
+When Jesus washed my sins away!</b>
+
+2.’Tis done, the great transaction’s done!
+I am the Lord’s and He is mine;
+He drew me and I followed on,
+Charmed to confess the voice divine.
+
+3.Now rest, my long-divided heart,
+Fixed on this blissful centre, rest;
+Nor ever from thy Lord depart,
+With Him of every good possessed.
+
+4. High heaven that heard the solemn vow,
+That vow renewed shall daily hear,
+Till in life’s latest hour I bow,
+And bless in death a bond so dear.
+
+5. And when the bright celestial train
+From highest heaven to earth shall come;
+Then with my Lord I’ll rise and reign
+Forever in that happy home.
+
+#15
+Title: Joy to the World
+Lyrics:
+1.Joy to the world! the Lord is come;
+Let earth receive her King;
+Let every heart prepare Him room,
+And heaven and nature sing,
+And heaven and nature sing,
+And heaven, and heaven and nature sing.
+
+2.Joy to the earth! the Saviour reigns;
+Let men their songs employ;
+While fields and floods, rocks, hills and plains
+Repeat the sounding joy,
+Repeat the sounding joy,
+Repeat, repeat the sounding joy.
+
+3.No more let sins and sorrows grow,
+Nor thorns infest the ground;
+He comes to make His blessings flow
+Far as the curse is found,
+Far as the curse is found,
+Far as, far as the curse is found.
+
+4.He rules the world with truth and grace,
+And makes the nations prove
+The glories of His righteousness,
+And wonders of His love,
+And wonders of His love,
+And wonders, and wonders of His love.
+
+#16 
+Title: For I’m Building a People of Power
+lyrics:
+For I’m building a people of power,
+And I’m making a people of praise,
+That will move through this land by My Spirit,
+And will glorify My precious Name.
+
+Build Your church, Lord,
+Make us strong, Lord,
+Join our hearts, Lord, through Your Son.
+Make us one, lord, in your body, in the kingdom of your son.
+
+#17
+Title: God Sent his son
+Lyrics:
+1. God sent his son, they called him Jesus
+He came to love, heal, and forgive; 
+He lived died to buy my pardon,
+An empty grave is there to prove my Savior lives.
+
+<b>Because he lives I can face tomorrow;
+Because he lives all fear is gone;
+Because I know he holds the future,
+And life is worth the living just because he lives.</b>
+
+2. How sweet to hold a new born baby,  
+And feel the pride, and joy he gives;  
+But greater still the calm assurance,  
+This child can face uncertain days  
+Because he lives.  
+
+3. And then one day I’ll cross the river;  
+I’ll fight life’s final war with pain;  
+And then as death gives way to victory,  
+I’ll see the lights of glory and I’ll know he lives.  
+
+#18
+Title: O LORD MY GOD WHEN IM IN AWESOME WONDER
+Lyrics:
+1. O Lord my God! When I’m in awesome Wonder  
+Consider all the works thy hand hath made,  
+I see the stars; I hear the mighty thunder,  
+Thy power throughout the universe’ displayed.  
+
+<b>Then sings my soul, my savior God, to thee,  
+How great thou art! How great thou art!  
+Then sings my soul, my savior God, to thee,  
+How great thou art! how great thou art!</b>  
+
+2. When through the woods and forest glades I Wonder and hear the birds sing sweetly in the trees;  
+When I look down from lofty mountain grandeur,  
+And hear the brook, and feel the gentle breeze;  
+
+3. And when I think that God his son not sparing,  
+Sent Him to die- I scarce can take it in.  
+That on the cross my burden gladly bearing,  
+He bled and died to take away my sin;  
+
+4. When Christ shall come with shout of acclamation  
+And take me home- what joy shall fill heart!  
+Then I shall bow in humble adoration  
+And there proclaim, my God, how great thou art!  
+
+#19
+Title: GIVE ME OIL
+Lyrics:
+1. Give me oil in my lamp keep me burning  
+Give me oil in my lamp, I pray,  
+Give me oil in my lamp keep me burning  
+Keep me burning, till the break of day,  
+  
+<b>Sing hosanna, sing hosanna,  
+Sing hosanna to the king of kings!  
+Sing hosanna, sing hosanna,  
+Sing hosanna to the king</b>  
+
+2. Make me fisher of men, keep me seeking.  
+Make me fisher of men, pray.  
+Make me fisher of men, keep me seeking.  
+Keep me seeking, till the break of day.  
+
+3. Give me joy in my heart, keep me singing.  
+Give me joy in my heart, pray.  
+Give me joy in my heart, keep me singing.  
+Keep me singing till the break of day.  
+
+4. Give me love in my heart, keep me saving.  
+Give me love in my heart, pray.  
+Give me love in my heart, keep me serving.  
+Keep me serving till the break of day. 
+
+#20
+Title:Shing’anga Ali Mupepi 
+Lyrics:
+  
+1. Shing’anga alimupepi,  
+Shina lyakwe ni yesu;  
+Atubelele uluse,  
+Umīwe īshwī ni yesu.  
+  
+<b>Bula ulwimbo lusuma,  
+Iwe shina lya kwa yesu,  
+Shina ilī lyacila,  
+Yesu, mfumu yesu.</b>  
+
+2. Impulumushi shelelwa  
+Pe shina lya kwa yesu;  
+Enda munshila ku mulu  
+Kwikala na yesu.  
+
+Iyafumye fibi nomwenso,  
+Ishina lya kwa yesu;  
+Natemwe shina lya mfumu,  
+Natemwa, mfumu, yesu.  
+
+Twimbe bonse tulumbanye  
+Ishina lya kwa yesu;  
+Tusumine lande lyakwe,  
+Landwe lya bupususho,  
+Iyo tukafika ku mulu  
+Tukamumona yesu,  
+Tukamwimbilo lwimbo lu  
+Iwe shina lya kwa yesu.  
+
+#21
+Title: Yesu Ni Ku Kalbale
+Lyrics:
+
+1. Yesu ni ku kalbale  
+Ndefwayo kwikala,  
+Kuti njishibe fyonse,  
+ifya luse Iwenu.  
+ 
+<b>Kalbale, Kalbale,  
+E kamutima wandi,  
+Ine nsangweko pe,  
+E ku mweowandi.</b>  
+
+2. E ko atuta babi,  
+Bamonako bumi;  
+Eko balesekela,  
+No bumi bapełwa.  
+
+3. Pakwisa kwa kwa kristu  
+Eko tukasangwa,  
+Na mu mulu mwa lesa  
+Kalbale tukemba.  
+
+#22
+Title:Myaka Ingi Na Posele Fye
+Lyrics:
+1. Myaka ingi na posele fye  
+Nasulile uwatanikwe,  
+Nśhaishibe fyo amfwilile,  
+Ku kalbale.  
+
+2. Bwingi bwa cikuku noluse:  
+Alipashile fibi fyandi.  
+E ko ne musha nalubwilwe,  
+Ku kalbale
+
+3. Ilyo lesa nshininyo bubi.  
+E lintu mwenso wanjikete:  
+Nasuka napilibukila  
+Ku kalbale.  
+
+4. Awe nomba ndi wa kwa yesu,  
+Na o nomba ni mfumu yandi;  
+Nombe nshikushonse ndeimbe  
+Fya kalbale.  
+
+5. E bupususho bwa kutasha,  
+Bwaletelwe no luse lwakwe;  
+Wene ifyo atufikile  
+Ku kalbale.  
+
+#23
+Title: Mwe katula mwinchillia
+ Lyrics:
+1. Mwe ka tula mwinchilila,  
+Ndemupapata.  
+Apo muleita bambi,  
+Mwilanchililila.  
+
+
+<b>Yesu, yesu  
+Mumfwe ndekuta,  
+Apo muleita bambi,  
+Mwilancilila.</b>  
+
+2. Kampalame kuli imwe,  
+Mpelwe uluse,  
+Kamfukame no bufuke,  
+Nsangyo mutende.  
+
+3. Mubusuma bwenu bweka  
+Ncetekele pe.  
+Mulemposha no kunteka,  
+Mone no bupe.  
+
+4. Ni mwe mweo no buseko,  
+Nimwe chikuku,  
+Umbi panshi nshimumwene,  
+Nangu mu mulu.  
+
+#24
+Title: Twimutota Anwe Lesa wa Danyela
+Lyrics:
+1. Twimutot'anwe lesa wa Daanyela,  
+pa kwitulama mu bimye byonse,  
+Mwalamine Danyela ku mabokwe;  
+Ne ba misheke mu munjilo.  
+
+<b>Ki ka kyotusakwimupa lesa,  
+Pakwitulama mu bimye byonse,  
+Nanchi tusakwimupa michima,  
+Nmibiji yetu mwkamo.</b>  
+
+2. Mwitupela Mwanennu yesu kilishitu,  
+Kino kyo kitulengela moyo,  
+Kino kyo kitulengela michima  
+Nemibiji yetumwikalamo.  
+
+3. Anwe batata ne anwe bamama,  
+Iya kuno tupwile pamo,  
+Tulete michima kwi mukuzhi,  
+Ye wayuka kwitulamwena.
+
+#25
+Title: Lesa Wami, Byo Mmona Byo Mwalenga
+Lyrics:
+1. Lesa wami, byo mmona byomwalenga,  
+Ne kwibikumya, byo byawanisha;  
+Ne minyanya ne Mvula utatauka  
+Byo byo bimwesha bulume bwenu;  
+
+<b>mupulumushi, nemwimbile Anwe,  
+yenu mwine, yenu mwine,  
+Mupulumushi, nemwibile Anwe,  
+yenu mwine, yenu mwine.</b>  
+
+2. Byo nenda mungye ne kumona binchi,  
+Ne kumvwa lwimbo wabangonyi'mo;  
+Pa kwimana peulu pa mitumba,  
+Po namona ne ntuanda yabaya.  
+
+3. Byo ndanguluka'mba lesawapana  
+Mwananji yesu witufwigile;  
+Pa musalabu witumanamine  
+Ne bubi bwetu wasenda bonse.  
+
+4. Pakeya yesu naba malaika  
+Po nkasekela pa kuya nanji;  
+Monka mwiulu mo nkamulambila  
+Ne kumotota, mamboye mwine.  
+
+#26
+Title: Amiwa Byo Nji Wa Yesu 
+Lyrics:
+1. Amiwa byo njiwa yesu  
+Ne wa kumulwila  
+Nchine byepi kwijitela.  
+Ja kwa nkembo yami;  
+
+<b>Mo mu jizhina janji  
+Ja yesu wamfwila,  
+Mo monka mo nkashinjila  
+Byankatazha byonse</b>  
+
+2. Ngyenga byepi mwanengela  
+Sa mmona byawama,  
+Bakwetu saka bakaba  
+Mu nkondo yabaya;  
+
+3. Ngikaletu byepi lelo  
+No nkondo kafwako,  
+Twikwachishe tulwe nabo  
+Balwanyi bonsetu.  
+
+#27
+Title: Nkekala Ku Kalvali
+Lyrics:
+1. Nkekala ku kalvali  
+Kwafwijlle yesu,  
+Kwaicikile mashi,  
+O etutokesha  
+
+<b>Kalvali, kalvali,  
+Nkatolanga myaka  
+Ve byo nkafika konka  
+Ku muzhi wa lesa.</b>  
+
+2. Byo najingamu bubi  
+Nachiinenga Lesa,  
+Nyile ku kalvali,  
+Ne lusa namwene.  
+
+3. Munkwasheko amiwa
+kwenda moba onse  
+Konka 'kwa ku kalvali,  
+Kasa ndanguluka.  
+
+4. Byo akeya mukuzhi  
+mu lukumo lwanji,  
+Akantane amiwa  
+Sa namutengela.  
+
+#28
+Title:NAKUPAINA MWEO MASHI NAICHILA
+Lyrics:
+1. Nakupaina mweo mashinaichila,  
+mambo a kukukula,  
+Umone bumi bwa pe;  
+Nakupaina mweo wami;  
+Ki ka kyo wangubila?  
+
+2. Nakumanamijile Byavujisha bingi,  
+Namwenelufu lubi  
+Namba, nkakupulushe,  
+Nakumwenejile byamalwa;  
+ki ka kyo wamwen'Ami?  
+
+3. Nalekele kwa tata,  
+konka kwawamisha  
+kuji, lukomo lonse,  
+Ne byonse byanengela;  
+Nelekele obewa byonse;  
+Bi ka byowandekeka? kooo  
+
+4. Byo natumine kwetu  
+Nakuletejile  
+Bumi, ne lusekelo,  
+Ne byonse byawamisha  
+Nakuletela bya bupetu;  
+Bi ka byo wandetela?  
+
+#29
+Title: Mu Bulanda Bonse Ubo usanga
+Lyrics:
+1. Mubulanda bonse ubo usanga,  
+Mu kushuka konse, mukupelelwa,  
+pende fintu fya nse lesa akupa  
+Cine uletasha pantu fyatula.
+
+<b>pende fintu fyonse fisuma!  
+pende fya bupe bwa kwa lesa  
+penda kale, penda nanomba,  
+Cine uletasha fyatula</b>
+
+2. Wafininwa no kucula we Mwana?  
+Capindama usendele cafina?  
+pendefintufyonse Lesa akupa,  
+ukwimba no kwanga nelyo wacula.
+
+3. Wibika mutima pa fya panonse,  
+Losha menso kuli kristu kuntashi,  
+penda fya bupe bwakwe ifyacisha,  
+Ne fya ku mwabo uleo atangila.
+
+4. Nomba mu kulwisha konse witendwa,  
+Lesa mukalamba alekumona,  
+Wene aishibe nshila uleya,  
+Lwendolonse mwine akulakwafwa.
+
+#30
+Title: NDA KUYANDA CIINDI CHONSE
+Lyrics:
+1. Nda kuyanda jesu iwe mwami wangu,  
+izwi lwako lila ndipa kuumuna  
+
+2. Ndakuyanda jesu kokala ambebo;  
+ku sunkwa kulaku ba ubaubu  
+
+<b>Ndayanda we ndayanda, Ciind'eci ndayanda  
+Kondileleka mwami! Nda boola kwako.  
+
+3. Ndakuyanda Jesu A mukukomana  
+Bola ku fwambaana Ainguzu Zyako.  
+
+</b>Ndayanda we ndayanda; Ciind'eci ndayanda  
+Kondileleka mwami! Nda boola kwako<b>  
+
+4. Nda kuyanda Jesu webo nditondezya,  
+A kulallilwa kube kwa kasimpa.  
+
+</b>Ndayanda ve ndayanda;  Ciind'eci ndayanda  
+Kondileleka mwami! Ndaboola kwako*.  
+
+5. Nda kuyanda jesu 'We Usetekene;  
+Uncite mbe wako, Mbe Ulelekedwe.
+
+#31
+Title: CISININZYO CIBOTU 
+BLESSED ASSURANCE
+
+Lyrics:
+
+1. Jesu, ngu wangu nda syomenzya,  
+Ndakomana mu bulemu bwakwe,  
+Nda funtusyingwa ndakaulwa,  
+Amanza akwe abulowa.  
+ 
+<b>Makani angu lwimbo lwangu,  
+kulumbaizya mufutuli;  
+Makani angu Iwinbo, Iwangu,  
+kulumbaizya mufutuli;</b>  
+
+2. Nkulipa kwangu Nda komana, Lino  
+ndila bola kukomana;  
+Bala seluka ibangele, Baleta luse  
+aluyando.  
+
+<b>Makani angu lwimbo lwangu,  
+kulumbaizya mufutuli;  
+Makani angu Iwinbo, Iwangu,  
+kulumbaizya mutufuli;</b>  
+
+3. Nkulipa kwangu ndilyokezye,  
+Mu mufutuli nalia komana;  
+Nalia linalia a ku boola,  
+Uzwide luse a luyando.  
+
+<b>Makani angu lwimbo lwangu,  
+kulumbaizya mufutuli;  
+Makani angu lwimbo, lwangu,  
+kulumbaizya mutufuli;</b>  
+
+#32
+Title: BUZUBA BWA KUKOMANA  
+O HAPPY DAY
+Lyrics: 
+
+1. Buzuba bwangu kukomana, Na nda ka ku sala,  
+Moyo wangu u elele, Ku bambila bantu bonse.  
+
+<b>Bubotu buzuba Jesu wa ndī gusya kubi;  
+wanāl yisya kupialla, Aku komanisya lyonse,  
+Bubotu buzuba Jesu wa ndī gusya kubi!</b> 
+
+2. Kwa simpila, kwa simpila, ndīli wakwe, ulī wangu,  
+wa ndī kwela, ndadilla, Nda ka komena ku itwa.  
+
+3. Ko lyokeza moyo wangu, ko yeya mwami wa zyonse,  
+Uta andani a leza, Uli jisi zinlu zyonse.
+
+#33
+Title: KA MU YA BASYILUMAMBA
+ONWARD CHRISTIAN SOLDIERS
+
+Lyrics:
+1. Ka mu ya basyilumamba ba klistu!  
+Cingano Cakwe ci la ya kumbele  
+Mukomi, u la solota lumamba,  
+Ka mu ya mu Iwanine mwami wenu!
+
+<b>Ka Mu ya basyilumamba ba klistu!
+Cinganocakwe ci laya kumbele</b>
+
+2. Inkamu ya Satani la yowa,  
+Ka mu ya basyilumamba, mu kone!  
+Bulelo bwa Satani bu la zunganya,  
+Bakvesu, amu imbe lwa ku koma.
+
+3. Malelo manjimanji aka inda,  
+inkamu ya leza I tana konwa;  
+satani ta kwe kuyanda inkamu;  
+Cisyamyo Ca jesu Ci la ku ima.
+
+4. A mu swangane nkamu ya Jesu,  
+A tu imbisye wimbo lwa ku koma!  
+Colwe cipati, kuti JESU Mwami;  
+Mbo tu ya kulmbisya kutamani.
+
+#34 
+Title: IMINA JESU  
+STAND UP FOR JESUS
+Lyrics:
+1. Ima imina Jesu basimamba bakwe,  
+Munyamune ndembela nomuzunda mubi,  
+Nomukoma kukondo musololi ngu Jesu,  
+Limwi mubi amane Jesu mwami wini.  
+
+2. Ima imina Jesu mpeta ilaita,  
+Kamuyu muka lwane mubulemu bwakwe,  
+Nobuntu mumukombe muzwe kubabyabi,  
+Muyume mamasunko canguzu mukome.  
+
+3. Ima Imina Jesu inguzu niziyakwe,  
+Masunko mulakoma mutabi nolike,  
+Amusame kasimpe akupailisya,  
+Mumulimo masunko mukabe bayumu.
+
+4. Ima imina Jesu nkondo ilamana,  
+Nokuba nkondo sunu junza  
+tuyakwinba  
+Kuli oyo ukoma musyini wabumi,  
+Uyakukala mwami akulela lyoonse
+
+#35 
+Title: Nakehekela Mukukzhi
+Lyrics:
+
+1. Nakehekela mukuzhi yenka yesu wañwijile;  
+Mashi anji ampulusha, koloka nako kwarawika.  
+
+<b>Pa kilishitu po naimana,  
+Ponse pakwabo pabipa,  
+pa kilishitu ponka pawama.</b>  
+
+2. Kana mfishi yamuzhita,  
+Na tesha muchima konka.  
+Nangwa mimona lumanamo,  
+Ye undamwina yenkeye.  
+
+3. jivi janji jo ja kine,  
+Ayelesa kubepa ne.  
+Byonse byo anday'amiva  
+Bikamwekanga nayuka.  
+
+4. Jivi janji jinkosesha  
+Byo byamweka bya katazha,  
+Pa kundeka bintu byonse,  
+Yesu kilishitu ye unkwasha.
+
+#36
+Title: Nkambo Ya Muchima Wami  
+Lyrics:
+
+1. Nkambo ya muchima wami  
+   Nkwashai kuvuluka  
+   Byo mwamfwijile Mukuzhi,  
+   Konka ku kalvali.  
+
+<b>Nakeya kuvulamako  
+Malwa a ku Ngesemani,  
+Ne byo Mwamfwijile Nkambo  
+Konka ku kalvali.</b>  
+
+2. Mmwesheshaiko, Nkambo,  
+   muchinya  
+   Wa milbambangoma  
+   Yebemuvwikile bantun  
+   Konka ku kalvali.  
+
+3. Nayuka ku saka kwenu  
+   Komwankeb'amiva,  
+   Lesa Iwine Iwamwekele  
+   Konka ku kalvali.  
+
+4. Kilende kyenu, Mukuzhi,  
+   Mo mwalupukile,  
+   Nayuka ngovu ya Lesa  
+   Imulupwillemo.  
+
+5. Nalomba namba nshikule  
+   Musalabu wami,  
+   Nakane amiwa, Nkambo.  
+   Ne kwimulondela
+
+#37
+Title: Mbunge Byo Ikafatama ne byonse bikapita<b></b>  
+When The Trumpet Of The LORD  
+Lyrics:
+1. Mbunge byo ikafatama ne, byonse bikapita,  
+Ne lukelo lwa Lesa Lukafika.  
+Ba kwa Kilishtu bakapvalta mu muzhi wa kwa Lesa,  
+Nkafantama ne amiwa sa njiko.  
+
+  
+<b>Mbunge byo ikajilatu  
+Mbuge byo ikajilatu  
+Mbunge byo ikajilatu  
+Nkafatama ne amiwa sa njiko.</b>  
+
+2. Aja juba japela ko pa kusanguka batu  
+Ne kuvwala lukumo lwa kwa yesu,  
+Batiwa byo bakapvalta mwabo monka mwiulu,  
+Nkafatama ne amiwa sa njiko.  
+
+3. Nanchi tumwinglienga Nkambo juba jansetu,  
+Twisambe pa mambo a lusa lwaji,  
+Byonkabyo pa kupwisha mingilo yonsetupamo  
+Nkafatama ne amiwa sa njiko.
+
+#38
+Title: NYAKA YINADING’NI MUSHIDI 
+Lyrics: 
+1. Nyaka yinanding’ni mumshdi  
+Hinamukenge’li yasuku,  
+Ilang’a yena wamfwilii kukalvari.  
+
+<b>Luwi İwindi Iwanswejeleli,  
+Lwakung’anakena nankshi;  
+Oku nayig’ili kunshidî kukavari.</b>  
+
+2. Hinamvilukili Nzamb’uku,  
+Nshimbi jindi najizqalili;  
+Natalili mesu awoma kukavari.  
+
+3. Nadilubuli kudi Yesu,  
+Diyi hohu Mwanta wamami  
+Nahayama chamfwilliyi kukavari.  
+
+4. Nzambi waswejeli kukeng’a  
+Antu onus munu mwishina,  
+Dichi wayinkeli mwanindi kukavari.
+
+#39
+Title: CHAKENZA YI MWANTA YESU  
+Lyrics: 
+1. Chakenza yi Mwanta yesu  
+Hatwakatiya mpang'a  
+Yakutambik antawindi  
+
+<b>Ejima akaya  
+Nakumuwana mwanta  
+Muna muluzwizu,  
+Nakutiya kuwaha.</b>  
+
+2. Amukalakeleli  
+Namuchima wejima  
+Akatiya kuwaha  
+Chakayawu mwiwulu.  
+
+3. Chitwakaya mwiwulu  
+mung'anda yalubanji,  
+Mwanta wakatuleja  
+Kulema kwindi kwansu.  
+
+4. Kwirza akwaejina ho-o  
+Hiyakaya nawuku,  
+Akashala mwomuku,  
+Nakutailia kiriwa.
+
+#40
+Title: Lesa E kachema Wandi
+Lyrics:
+1. Lessa e kachema wandi,  
+Nshakakabile pe,  
+Ku mulemtwe alentwala,  
+Ku menshi yaa burni.
+
+2. Umutima ambwesssha,  
+Mu twendo angatwa,  
+Mu nshila sha bololoke,  
+Pe shina lyakwe fye.
+
+3. Lintu nkenda mu mtwame,  
+Nshakaline kantu,  
+Pantu imwe mulesunga,  
+No kunsansamusha.
+
+4. Cintamba mwanungikila,  
+Ku cinso cababi,  
+Umutwe wandi mwansuba,  
+Nkombo shaisula.
+
+5. Busuma bweka no luse,  
+Fyakulankonkape,  
+Na mung'anda yakwa lesa,  
+Nkekaliiliamo.
+
+#41
+Title: I Am Weak But Thou Art Strong
+Lyrics:
+1.I am weak but Thou art strong;
+Jesus, keep me from all wrong;
+I'll be satisfied as long
+As I walk, let me walk close to Thee.
+
+<b>Just a closer walk with Thee,
+Grant it, Jesus, is my plea,
+Daily walking close to Thee,
+Let it be, dear Lord, let it be.</b>
+
+2.Thro' this world of toil and snares,
+If I falter, Lord, who cares?
+Who with me my burden shares?
+None but Thee, dear Lord, none but Thee. 
+
+3.When my feeble life is o'er,
+Time for me will be no more;
+Guide me gently, safely o'er
+To Thy kingdom shore, to Thy shore. 
+
+#42
+Title: Man of Sorrow
+Lyrics:
+1.Man of Sorrows,” what a name
+For the Son of God who came
+Ruined sinners to reclaim!
+  Hallelujah! what a Savior!
+
+2.Bearing shame and scoffing rude,
+In my place condemned He stood;
+Sealed my pardon with His blood;
+  Hallelujah! what a Savior!
+3.Guilty, vile, and helpless, we,
+Spotless Lamb of God was He;
+Full redemption—can it be?
+  Hallelujah! what a Savior!
+
+4.Lifted up was He to die,
+“It is finished!” was His cry;
+Now in heaven exalted high;
+  Hallelujah! what a Savior!
+
+5.When He comes, our glorious King,
+To His kingdom us to bring,
+Then anew this song we’ll sing
+  Hallelujah! what a Savior!
+
+#43
+Title: Leaning on Everlasting Arms
+Lyrics:
+1. What a fellowship, what a joy divine,
+leaning on the everlasting arms;
+what a blessedness, what a peace is mine,
+leaning on the everlasting arms.
+
+<b>Leaning, leaning,
+safe and secure from all alarms;
+leaning, leaning,
+leaning on the everlasting arms.</b>
+
+2. O how sweet to walk in this pilgrim way,
+leaning on the everlasting arms;
+O how bright the path grows from day to day,
+leaning on the everlasting arms.
+
+3.What have I to dread, what have I to fear,
+leaning on the everlasting arms?
+I have blessed peace with my Lord so near,
+leaning on the everlasting arms. 
+
+#44
+Title: Near The Cross
+Lyrics:
+1.Jesus, keep me near the cross,
+There a precious fountain;
+Free to all, a healing stream,
+Flows from Calv'ry's mountain.
+
+<b>In the cross, in the cross
+Be my glory ever,
+Till my ransomed soul shall find
+Rest beyond the river.</b>
+
+2.Near the cross, a trembling soul,
+Love and mercy found me;
+There the Bright and Morning Star
+Shed His beams around me.
+
+3. Near the cross! O lamb of God,
+Bring its scenes before me;
+Help me walk from day to day
+With its shadow o'er me.
+
+4.Near the cross! I'll watch and wait,
+Hoping, trusting ever;
+Till I reach the golden strand,
+Just beyond the river. [Refrain]
+
+#45
+Title: I Will Enter His Gates
+Lyrics:
+
+I will enter His gates with thanksgiving in my heart;
+I will enter His courts with praise.
+I will say this is the day that the Lord has made.
+I will rejoice for He has made me glad.
+He has made me glad, He has made me glad,
+I will rejoice for He has made me glad.
+He has made me glad, He has made me glad,
+I will rejoice for He has made me glad.
+
+#46
+Title: The Lord Is My Shepherd
+Lyrics:
+1. The Lord is my shepherd I shall not want  
+   He makes me lie down in green pasture,  
+   He leads me beside still waters;  
+   Refresh my soul,  
+   He leads me in the path of righteousness,  
+   For his name sake;  
+   Even thou I walk to the valleys of shadow of death.  
+   I will fear no evil for thou art with me.  
+
+<b>A m in love Am in love Am in love ye!  
+With my Jesus Am in love.  
+I 've fallen in love with my Lord.</b>  
+
+2. Surely his goodness and mercy shall follow me  
+   All the days of my life and I'll dwell in the house;  
+   Of the Lord forever more.  
+
+3. Nalimutemwa, Nalimutemwa, Nalimutemwa  
+   Uyu yesu, Nalimutemwa no mulima wandi onse;  
+
+4. Nalimukonda, Nalimukonda, Nalimukonda  
+   Uyu yesu, Nalimukonda, Nalimulima wanga onse
+
+#47
+Title: LORD I LIFT YOUR NAME ON HIGH
+Lyrics:
+
+1.  Lord, I lift Your name on high,  
+Lord, I love to sing Your praises.  
+I’m so glad You’re in my life,  
+I’m so glad You came to save us.  
+
+  
+<b>You came from heaven to earth  
+To show the way,  
+From the earth to the cross,  
+My debt to pay.  
+From the cross to the grave,  
+From the grave to the sky,  
+Lord, I lift Your name on high.</b>  
+
+#48
+Title: JESUS PAID IT ALL 
+Lyrics:
+1.  I hear the Savior say,  
+“Thy strength indeed is small;  
+Child of weakness, watch and pray,  
+Find in Me thine all in all.”  
+
+<b>Jesus paid it all,  
+All to Him I owe;  
+Sin had left a crimson stain  
+He washed it white as snow.</b>  
+
+2.  Lord, now indeed I find  
+Thy power and Thine alone  
+Can change the leper’s spots  
+And melt the heart of stone.  
+
+3.  Since nothing good have I  
+Whereby Thy grace to claim,  
+I’ll wash my garments white  
+In the blood of Calv’ry’s Lamb.  
+
+4.  And when before the throne  
+I stand in Him complete,  
+I’ll lay my trophies down,  
+All down at Jesus’ feet.
+
+#49
+Title: JESUS IS COMING AGAIN<b>
+Lyrics:
+1.  Lift up the trumpet, and loud let it blast,  
+Jesus is coming again!  
+Cheer up, ye pilgrims, be joyful and sing,  
+Jesus is coming again!  
+
+</b>Coming again, coming again,  
+Jesus is coming again!*  
+
+2.  Echo it, hilltops; proclaim it, ye plains:  
+Jesus is coming again!  
+Coming in glory, the Lamb that was slain;  
+Jesus is coming again!  
+
+3.  Sound it, old Ocean, in each mighty wave,  
+Jesus is coming again!  
+Break on the sands of the shores where ye lave;  
+Jesus is coming again!  
+
+4.  Hear it, O earth, tell the vast, wondering throng:  
+Jesus is coming again!  
+The storms and whirlwinds herald His coming,  
+Jesus is coming again!  
+
+5.  Nations are angry—by this we do know  
+Jesus is coming again!  
+Knowledge increases, men run to and fro,  
+Jesus is coming again!
+
+#50
+Title: UKAPENYA KWA YESU
+Lyrics:
+
+1.  Ukapenya kwa yesu uliko mayoko,  
+India, mayo Taoganaoganotur  
+Wodakvita uyamya Kwa yesu mibuyeyo,  
+Kuwanibola naifaratu, wia.  
+
+<b>Onal Onal Onaturi  
+Kuli moyo kwa yemse  
+Apanya Yesuyo Makutaratu  
+Paminardapa.</b>  
+
+2.  Anasaraza pa bivanji Uchimo Waneswa,  
+Nipati waitu pa Yesu sulpa?  
+Bivanji mwazi wabhelha kutsuka listu,  
+Nipati awu Sultawanaka?  
+
+3.  Zitrahiraadi zama Kugula Mayowo,  
+Koma mwazi wa Yesu mibuyeyo,  
+Khulupita mwa mahamvu ya Mungu waithuyi  
+Kuyeralta' wa m'miilimakanaa.  
+
+4.  Atarihara paminarda Zintichiro jānasai  
+Yoivanibola mirimu Yoivani,  
+Nappa yemse aikadza Matsanahatkanakwasi  
+Mayo apaza kwa Yasuko.
+
+#51
+Title: WONDROUS STORY
+Lyrics:
+
+1.  I will sing the wondrous story  
+Of the Christ who died for me,  
+How He left the realms of glory  
+For the cross on Calvary.  
+
+<b>Yes, I’ll sing the wondrous story  
+Of the Christ who died for me,  
+Sing it with His saints in glory,  
+Gathered by the crystal sea</b>  
+
+2.  I was lost; but Jesus found me,  
+Found the sheep that went astray,  
+Raised me up and gently led me  
+Back into the narrow way.  
+
+3.  I was bruised; but Jesus healed me,  
+Faint was I from many a fall;  
+Sight was gone, and fears possessed me;  
+But He freed me from them all.  
+
+4.  Days of darkness still may meet me,  
+Sorrow’s paths I oft may tread;  
+But His presence still is with me,  
+By His guiding hand I’m led.
+
+#52
+Title: A PASSING THROUGH
+Lyrics: 
+1.  This world is not my home, I’m  
+Just passing through;  
+My treasures are laid up somewhere  
+Beyond the blue;  
+The angels beckon me from heaven’s  
+Open door,  
+And I can’t feel at home in this  
+World anymore.  
+
+<b>O Lord, you know I have no friend  
+Like you.</b>  
+
+2.  If heaven’s not my home, then,  
+Lord, what will I do;  
+The angels beckon me from heaven’s  
+Open door.  
+And I can’t feel at home in this world  
+Anymore.  
+
+3.  They’re all expecting me, and  
+That’s one thing I know.  
+I fixed it up with Jesus many years  
+Ago:  
+I know He’ll take me through though  
+I am weak and poor.  
+And I can’t feel at home in this  
+World anymore.  
+
+4.  I have a loving mother o’er  
+Glory land.  
+I don’t expect to stop until I shake  
+Her hand;  
+She’s waiting now for me in heaven’s  
+Open door.  
+And I can’t feel at home in this world  
+Anymore.  
+
+5.  Just o’er in glory land we’ll live  
+Eternally,  
+The saints on every hand are shouting  
+Victory.  
+Their songs of sweetest praise drift  
+Back from heaven’s shore,  
+And I can’t feel at home in this world  
+Anymore.
+
+#53
+Title: POWER IN THE BLOOD
+Lyrics:
+
+1.  Would you be free from your burden of sin?  
+There’s power in the blood, power in the blood.  
+Would you o’er evil a victory win?  
+There’s wonderful power in the blood.  
+
+<b>There is power, power, wonder-working power</b>  
+<b>In the blood of the Lamb;</b>  
+<b>There is power, power, wonder-working power</b>  
+<b>In the precious blood of the Lamb.</b>  
+
+2.  Would you be free from your passion and pride?  
+There’s power in the blood, power in the blood.  
+Come for a cleansing to Calvary’s tide.  
+There’s wonderful power in the blood.  
+
+3.  Would you be whiter, much whiter than snow?  
+There’s power in the blood, power in the blood;  
+Sin-stains are lost in its life-giving flow.  
+There’s wonderful power in the blood.  
+
+4.  Would you do service for Jesus your King?  
+There’s power in the blood, power in the blood;  
+Would you live daily His praises to sing?  
+There’s wonderful power in the blood.
+
+#54
+Title: BRINGING IN THE SHEAVES  
+Lyrics:
+1.  Sowing in the morning, sowing seeds  
+Of kindness;  
+Sowing at noontide and the dewy eve;  
+Waiting for the harvest, and the time of reaping;  
+We shall come rejoicing, bringing in the sheaves!  
+
+<b>Bringing in the sheaves! Bringing in the sheaves!
+We shall come rejoicing, bringing in the sheaves! 
+Bringing in the sheaves! Bringing in the sheaves!  
+We shall come rejoicing, bringing in the sheaves!</b>  
+
+2.  Sowing in the sunshine, sowing in the shadows;  
+Fearing neither clouds nor winter’s chilling breeze;  
+By and by, the harvest and the labor ended;  
+We shall come rejoicing, bringing in the sheaves!  
+
+3.  Go then, ever weeping, sowing for the Master;  
+Though the loss sustained our spirit often grieves;  
+When our weeping’s over, He will bid us welcome;  
+We shall come rejoicing, bringing in the sheaves!  
+
+#55
+Title: IT IS WELL<b></b>  
+Lyrics:
+1.  When peace like a river attendeth my way,  
+When sorrows like sea billows roll;  
+Whatever my lot, Thou hast taught me to say,  
+It is well, it is well with my soul!  
+
+<b>It is well (it is well),  
+With my soul (with my soul),  
+It is well, it is well with my soul!</b>  
+
+2.  Though Satan should buffet, though trials should come,  
+Let this blest assurance control:  
+That Christ hath regarded my helpless estate,  
+And hath shed His own blood for my soul.  
+
+3.  My sin—O the bliss of this glorious thought!—  
+My sin, not in part but the whole,  
+Is nailed to His Cross, and I bear it no more;  
+Praise the Lord, praise the Lord, O my soul!  
+
+4.  But Lord, ’tis for Thee, for Thy coming we wait;  
+The sky, not the grave, is our goal;  
+O trump of the angel! O voice of the Lord!  
+Blessèd hope, blessèd rest for my soul!
+
+#56
+Title: NEARER, MY GOD, TO THEE  
+Lyrics:
+
+1.  Nearer, my God, to thee, nearer to thee!  
+E’en though it be a cross,  
+That raiseth me;  
+Still all my song shall be:  
+<b>"Nearer, my God, to thee,  
+Nearer to thee."</b>  
+
+2.  Though like a wanderer,  
+Daylight all gone,  
+Darkness comes over me,  
+My rest a stone;  
+Yet in my dreams I’d be  
+<b>Nearer, my God, to thee,  
+Nearer, my God, to thee,  
+Nearer to thee!</b>  
+
+3.  There let the way appear,  
+Steps up to heaven;  
+All that Thou sendest me,  
+In mercy given;  
+Angels to beckon me  
+<b>Nearer, my God, to thee,  
+Nearer, my God, to thee,  
+Nearer to thee!</b>  
+
+4.  Then, with my waking thoughts  
+Bright with Thy praise,  
+Out of my stony griefs  
+Bethel I’ll raise;  
+So by my woes to be  
+<b>Nearer, my God, to thee,  
+Nearer, my God, to thee,  
+Nearer to thee!</b>  
+
+5.  Or if on joyful wing,  
+Cleaving the sky,  
+Sun, moon, and stars forgot,  
+Upward I fly,  
+Still all my song shall be:  
+<b>"Nearer, my God, to thee,  
+Nearer, my God, to thee,  
+Nearer to thee!"</b>
+
+#57
+Title: MTIMA WA MBUYAKO
+Lyrics:
+1.  Mtima wa mbuyako ukukonda 'we:  
+Ndiye waktuona Wopiiirabe;  
+Ukasowa bwenzi, Usaope 'yi;  
+Chikondano chake Chikwaniraali.  
+
+2.  Akukumbukita Yesu yemweyo;  
+M'kuyaniana naye mulimoyomo,  
+Uderanji nkhawa? Mpulumutsiyo  
+Atisamalira, Aitsungatu.  
+
+3.  M'munda wa mbuyako Muli nichitomo;  
+Amithenga ake digwirayo,  
+Usaime chabe, Usakhale duul  
+Yesu akufuna umuthandizetu.  
+
+4.  Kwawa kwa mbuyako Udzafikako;  
+Miwa ulemerero udzabuma phieel  
+Usalowerere, Myera Yesuyo,  
+Ali: "Mwana wanga, Bwera kwathuko."  
+
+#58
+Title: WINA ATIKONDA IFE
+Lyrics: 
+
+1.  Wina atikonda ife,  
+Bwenzi lathu naiyeyu;  
+Atifunatuna ife,  
+Inde, nthawi zonseiu.  
+
+<b>Chikondano Chakeci,  
+Nchachiikulukuludi.</b>  
+
+2.  Ndani mwa abale athu  
+Akanatiferai'ee?  
+Koma Yesu mmalo mwathu  
+Anapachikidwatu.  
+
+3.  Anammyaza pansi pano,  
+Bwenzi la ochimwawa;  
+Mu ulemenero wake  
+Alikonda Dzinali.  
+
+4.  Timchimwira kopambana,  
+Ndi kuruusautsa 'ye,  
+Koma bwenzi lathu Yesu,  
+Atikondakondabe.  
+
+5.  Milphunzitse, Mbuye Yesu,  
+Tikondane nanutu;  
+Tisaiwalite konse  
+Bwenzi lathu ndinutu.
+
+#59
+Title: CHIYEMBEKEZO
+Lyrics:
+
+1.  Chiyembekezo changacho  
+Chamangidwa pa mwaziwo;  
+Sindikhulupira pena,  
+Nalingotsamira pa Yesu.  
+
+<b>Ndima nji pa Kristuya,  
+Natiye Chitsanzo cholimba,  
+Natiye mwala m’chenga,  
+Ndima nji pa Kristuya,  
+Natiye Chitsanzo cholimba,  
+Mwala weni m’chenga.</b>  
+
+2.  Nkhope yake ikhazikika,  
+Ndipuma m’chisomo chake;  
+M’manja mwake ndi m’mphepete  
+Zonse,  
+Nthaka yanga ili njira.  
+
+3.  Pangano lake m’mwaziwo  
+Lindisunga m’chigumula;  
+Zendizinga zikachoka,  
+Yesu ndiye Thanthwe langa.  
+
+4.  Likarira lipengalo,  
+Ndipezeke mwa Yesuyo  
+Wovekedwa,  
+Wolungana,  
+Wopanda banga konseka.
+
+#60
+Title: KWATHU SIPADZIKO
+Lyrics:
+
+1.  Kwathu sipadziko, Ndingopitirira,  
+Ndadzikundikira chuma ku bwambako;  
+Mngelo akadandaula pakhoma  
+La m’mwamba;  
+Ndiye dziko lapansi sindiyesa kwathu.  
+
+<b>Mbuye, ndiwe bwenzi langa,  
+Ndiwe, Ndiwe njira yanga yoti ku bwambako  
+Si kwathu? 
+Mngelo akadandaula pakhoma  
+La m’mwamba,  
+Ndiye dziko lapansi sindiyesa kwathu.</b>  
+
+2.  Ndayembekezera, chinthu chinaliza,  
+Mpulumutsi Wanga wandikhulukira;  
+Adzandiyalutsa pamene ndadzuka;  
+Ndiye dziko lapansi sindiyesa kwathu.  
+
+3.  Mayi wasandala ku ulemerero,  
+Nafuna kugwira dzanja lake konka,  
+Andialikiranso pakomo la m’mwamba,  
+Ndipo dziko lapansi sindiyesa kwathu.  
+
+4.  Mu ulemelerero tidzakhala m’moyo,  
+Oyeretsedwawo adzakulambira;  
+Ali, “Aleluya kwa Mlungu wamphamvu,”  
+Ndipo dziko lapansi sindiyesa kwathu.
+
+#61
+Title:AMBIRI TIKONDWERA 
+Lyrics:
+ 
+1.  Ambiri tikondwera mwa Yesu,  
+Nanga inu? Nanga inu?  
+Tapeza chipulumutso nathu;  
+Nanga inu?  
+
+<b>Masiku onse timakondwera  
+Pakumva mawu ake a Yesu;  
+Walangiza tidzamumvera;  
+Nanga inu?</b>  
+
+2.  Ine ndayembekezera Yesu,  
+Nanga inu? Nanga inu?  
+Chimwemwecho chili mumtima mwathu;  
+Nanga inu?  
+
+3.  Titasekera kudzabwerera,  
+Nanga inu? Nanga inu?  
+Tadzawa kuti ndiwe Ulemu;  
+Nanga inu?  
+
+4.  Tinaika m’njira yathu yonse,  
+Nanga inu? Nanga inu?  
+Tikapeze nafe mawu a Yesu;  
+Nanga inu?
+
+#62
+Title:ANCIENT WORDS
+Lyrics:
+1.  Holy words long preserved  
+For our walk in this world,  
+They resound with God’s own heart.  
+Oh, let the ancient words impart.  
+
+<b>Ancient words ever true, 
+Ancient words ever true,  
+Ancient words ever true,  
+</b>Changing me and changing you.  
+We have come with open hearts,  
+Oh, let the ancient words impart.*  
+
+2.  Words of Life, words of Hope,  
+Give us strength, help us cope.  
+In this world, where e’er we roam,  
+Ancient words will guide us home.  
+
+3.  Holy words of our Faith,  
+Handed down to this age.  
+Come to us through sacrifice.  
+Oh heed the faithful words of Christ
+
+#63
+Title: LORD PREPARE ME
+Lyrics: 
+<b>Lord, prepare me  
+To be a sanctuary, 
+Pure and holy, 
+Tried and true.  
+With thanksgiving,  
+I’ll be a living  
+Sanctuary for You.</b>  
+(Repeat 4x)
+
+#64
+Title: What the lord has done for me
+Lyrics:
+1.  What the Lord has done for me,  
+I cannot tell it all,  
+What the Lord has done for me,  
+I cannot tell it all.  
+He saved me and washed me in His blood.  
+ 
+<b>So I will sing Alleluia,  
+I will shout Alleluia,  
+I will sing, I will sing, praise the Lord!</b>  
+
+# 65
+Title: KUMBAYA  
+Lyrics:
+1.  Kumbaya, my Lord, kumbaya,  
+Kumbaya, my Lord, kumbaya,  
+Kumbaya, my Lord, kumbaya,  
+Oh, Lord, kumbaya.  
+
+2.  Someone’s singing, Lord, kumbaya,  
+Someone’s singing, Lord, kumbaya,  
+Someone’s singing, Lord, kumbaya,  
+Oh, Lord, kumbaya.  
+
+3.  Someone’s praying, Lord, kumbaya,  
+Someone’s praying, Lord, kumbaya,  
+Someone’s praying, Lord, kumbaya,  
+Oh, Lord, kumbaya.  
+
+4.  Someone’s shouting, Lord, kumbaya,  
+Someone’s shouting, Lord, kumbaya,  
+Someone’s shouting, Lord, kumbaya,  
+Oh, Lord, kumbaya.  
+
+5.  Someone’s crying, Lord, kumbaya,  
+Someone’s crying, Lord, kumbaya,  
+Someone’s crying, Lord, kumbaya,  
+Oh, Lord, kumbaya.
+# 66. 
+
+Title: HOW GOOD IS THE GOD WE ADORE
+Lyrics:
+
+1.  How good is the God we adore!  
+Our faithful, unchangeable Friend;  
+His love is as great as His pow’r,  
+And knows neither measure nor end.  
+
+2.  For Christ is the first and the last;  
+His Spirit will guide us safe home.  
+We’ll praise Him for all that is past,  
+And trust Him for all that’s to come.
+
+# 67. 
+Title: THERE'S NOT A FRIEND
+Lyrics:
+1.  There's not a friend like the lowly Jesus  
+No, not one! No, not one!  
+None else could heal all our soul's diseases  
+No, not one! No, not one!  
+
+
+<b>Jesus knows all about our struggles,  
+He will guide till the day is done;  
+There's not a friend like the lowly Jesus 
+No, not one! No, not one!</b>  
+
+2.  No friend like Him is so high and holy  
+No, not one! No, not one!  
+And yet no friend is so meek and lowly 
+No, not one! No, not one!
+
+# 68
+Title: ALL THE WAY MY SAVIOUR LEADS ME  
+
+1.  All the way my Saviour leads me  
+What have I to ask beside?  
+Can I doubt His tender mercy,  
+Who through life has been my Guide?  
+Heav’nly peace, divinest comfort,  
+Here by faith in Him to dwell!  
+For I know, whate’er befall me,  
+Jesus doeth all things well;  
+For I know, whate’er befall me,  
+Jesus doeth all things well.  
+
+2.  All the way my Saviour leads me  
+Cheers each winding path I tread;  
+Gives me grace for every trial,  
+Feeds me with the living bread.  
+Though my weary steps may falter,  
+And my soul athirst may be,  
+Gushing from the Rock before me,  
+Lo! A spring of joy I see;  
+Gushing from the Rock before me,  
+Lo! A spring of joy I see.  
+
+3.  All the way my Saviour leads me  
+Oh, the fullness of His love!  
+Perfect rest to me is promised  
+In my Father’s house above.  
+When my spirit, clothed immortal,  
+Wings its flight to realms of day,  
+This my song through endless ages:  
+“Jesus led me all the way”;  
+This my song through endless ages:  
+“Jesus led me all the way.”
+
+# 69
+Title: GREAT IS THY FAITHFULNESS  
+
+1.  Great is Thy faithfulness, O God my Father;  
+There is no shadow of turning with Thee.  
+Thou changest not, Thy compassions, they fail not;  
+As Thou hast been, Thou forever wilt be.  
+
+  
+<b>Great is Thy faithfulness!  
+Great is Thy faithfulness!  
+Morning by morning new mercies I see;  
+All I have needed Thy hand hath provided  
+Great is Thy faithfulness, Lord, unto me!</b>  
+
+2.  Summer and winter and springtime and harvest,  
+Sun, moon, and stars in their courses above  
+Join with all nature in manifold witness  
+To Thy great faithfulness, mercy, and love.  
+
+3.  Pardon for sin and a peace that endureth,  
+Thine own dear presence to cheer and to guide,  
+Strength for today and bright hope for tomorrow  
+Blessings all mine, with ten thousand beside!
+
+# 70. 
+Title: TIS SO SWEET TO TRUST IN JESUS
+
+1.  ’Tis so sweet to trust in Jesus,  
+Just to take Him at His word,  
+Just to rest upon His promise,  
+Just to know, “Thus saith the Lord.”  
+ 
+<b>Jesus, Jesus, how I trust Him!  
+How I’ve proved Him o’er and o’er!  
+Jesus, Jesus, precious Jesus! 
+Oh, for grace to trust Him more!</b>  
+
+2.  Oh, how sweet to trust in Jesus,  
+Just to trust His cleansing blood;  
+And in simple faith to plunge me  
+’Neath the healing, cleansing flood.  
+
+3.  Yes, ’tis sweet to trust in Jesus,  
+Just from sin and self to cease;  
+Just from Jesus simply taking  
+Life and rest, and joy, and peace.
+
+# 71
+Title: STANDING ON THE PROMISES
+Lyrics:  
+1.  Standing on the promises of Christ my King,  
+Through eternal ages let His praises ring;  
+Glory in the highest, I will shout and sing,  
+Standing on the promises of God.  
+
+<b>Standing, standing,  
+Standing on the promises of God my Savior;  
+Standing, standing,  
+Standing on the promises of God.</b>  
+
+2.  Standing on the promises that cannot fail,  
+When the howling storms of doubt and fear assail,  
+By the living Word of God I shall prevail,  
+Standing on the promises of God.  
+
+3.  Standing on the promises of Christ the Lord,  
+Bound to Him eternally by love’s strong cord,  
+Overcoming daily with the Spirit’s sword,  
+Standing on the promises of God.  
+
+4.  Standing on the promises I cannot fall,  
+Listening every moment to the Spirit’s call,  
+Resting in my Saviour as my all in all,  
+Standing on the promises of God.
+
+# 72
+Title: MY HOPE
+Lyrics:
+1.  My hope is built on nothing less  
+Than Jesus’ blood and righteousness;  
+I dare not trust the sweetest frame,  
+But wholly lean on Jesus’ name.  
+
+
+<b>On Christ, the solid Rock, I stand;  
+All other ground is sinking sand;  
+All other ground is sinking sand.</b>  
+
+2.  When darkness veils His lovely face,  
+I rest on His unchanging grace;  
+In every high and stormy gale,  
+My anchor holds within the veil.  
+
+3.  His oath, His covenant, His blood,  
+Support me in the whelming flood;  
+When all around my soul gives way,  
+He then is all my hope and stay.  
+
+4.  When He shall come with trumpet sound,  
+O may I then in Him be found,  
+Dressed in His righteousness alone,  
+Faultless to stand before the throne.
+
+#73
+Title: MASTER SPEAK
+Lyrics:
+1.  Master, speak! Thy servant heareth,  
+Waiting for Thy gracious word,  
+Longing for Thy voice that cheereth;  
+Master, let it now be heard.  
+I am listening, Lord, for Thee;  
+What hast Thou to say to me?  
+
+2.  Speak to me by name, O Master,  
+Let me know it is to me;  
+Speak, that I may follow faster,  
+With a step more firm and free,  
+Where the Shepherd leads the flock  
+In the shadow of the Rock.  
+
+3.  Master, speak! The least and lowest,  
+Let me not unheard depart.  
+Master, speak! For oh, Thou knowest  
+All the yearning of my heart,  
+Knowest all its truest need;  
+Speak, and make me blest indeed.  
+
+4.  Master, speak, and make me ready  
+When Thy voice is truly heard,  
+With obedience glad and steady  
+Still to follow ev’ry word.  
+I am listening, Lord, for Thee;  
+Master, speak, oh speak to me!
+
+#74
+Title: LET YOUR LIVING WATER  
+
+Lyrics:
+
+1.  Let Your living water  
+Flow over my soul.  
+
+2.  Let Your Holy Spirit  
+Come and take control.  
+
+3.  Every situation  
+That has troubled my mind.  
+
+4.  All my cares and burdens  
+Onto You I roll.  
+ 
+<b>Jesus, Jesus, Jesus,  
+Father, Father, Father,  
+Spirit, Spirit, Spirit.</b>  
+
+5.  Come now, Holy Spirit  
+And take control.  
+
+6.  Hold me in Your loving arms  
+And make me whole.  
+
+7.  Wipe away all doubt and fear  
+And take my pride.  
+
+8.  Draw me to Your love  
+And keep me by Your side.  
+
+9.  Give your life to Jesus,  
+Let Him fill your soul.  
+
+10.  Let Him take you in His arms  
+And make you whole.  
+
+11.  As you give your life to Him,  
+He’ll set you free.  
+
+12.  You will live and reign  
+With Him eternally.  
+
+#75
+Title: WHEN HE COMETH
+Lyrics:
+
+1.  When He cometh, when He cometh,  
+To make up His jewels,  
+All His jewels, precious jewels,  
+His loved and His own.  
+
+  
+<b>Like the stars of the morning,  
+His bright crown adorning,  
+They shall shine in their beauty,  
+Bright gems for His own.</b>  
+
+2.  He will gather, He will gather  
+The gems for His kingdom;  
+All the pure ones, all the bright ones,  
+His loved and His own.  
+
+3.  Little children, little children,  
+Who love their Redeemer,  
+Are the jewels, precious jewels,  
+His loved and His own. 
+ 
+#76
+Title: ARE YOU WASHED IN THE BLOOD
+Lyrics:
+1.  Have you been to Jesus for the cleansing power?  
+Are you washed in the blood of the Lamb?  
+Are you fully trusting in His grace this hour?  
+Are you washed in the blood of the Lamb?  
+
+  
+<b>Are you washed in the blood?  
+(Are you washed in the blood?)  
+In the soul-cleansing blood of the Lamb?  
+Are your garments spotless, are they white as snow?  
+Are you washed in the blood of the Lamb?</b>  
+
+2.  Are you walking daily by the Savior’s side?  
+Are you washed in the blood of the Lamb?  
+Do you rest each moment in the Crucified?  
+Are you washed in the blood of the Lamb?  
+
+3.  When the Bridegroom cometh, will your robes be white?  
+Are you washed in the blood of the Lamb?  
+Will your soul be ready for the mansions bright?  
+Are you washed in the blood of the Lamb?  
+
+4.  Lay aside the garments that are stained with sin,  
+Are you washed in the blood of the Lamb?  
+There’s a fountain flowing for the soul unclean,  
+Oh, be washed in the blood of the Lamb!
+
+#77
+Title:MY HOPE IS BUILT
+Lyrics:
+   
+1.  My hope is built on nothing less  
+Than Jesus’ blood and righteousness;  
+I dare not trust the sweetest frame,  
+But wholly lean on Jesus’ name.  
+ 
+*On Christ, the solid Rock, I stand;  
+All other ground is sinking sand;  
+All other ground is sinking sand.  
+
+2.  When darkness seems to veil His face,  
+I rest on His unchanging grace;  
+In every high and stormy gale,  
+My anchor holds within the veil.  
+
+3.  His oath, His covenant, and blood,  
+Support me in the whelming flood;  
+When all around my soul gives way,  
+He then is all my hope and stay.  
+
+4.  When He shall come with trumpet sound,  
+O may I then in Him be found,  
+Clad in His righteousness alone,  
+Faultless to stand before the throne.
+
+#83
+Title: WHITER THAN SNOW
+Lyrics:  
+1.  Lord Jesus, I long to be perfectly whole,  
+I want Thee forever to live in my soul;  
+Break down every idol, cast out every foe,  
+Now wash me, and I shall be whiter than snow.  
+
+<b>Whiter than snow, yes, whiter than snow,  
+Now wash me, and I shall be whiter than snow.</b>  
+
+2.  Lord Jesus, look down from Thy throne in the skies,  
+And help me to make a complete sacrifice;  
+I give up myself, and whatever I know,  
+Now wash me, and I shall be whiter than snow.  
+
+3.  Lord Jesus, for this I most humbly entreat,  
+I wait, blessed Lord, at Thy crucified feet;  
+By faith, for my cleansing, I see Thy blood flow,  
+Now wash me, and I shall be whiter than snow.  
+
+4.  Lord Jesus, Thou seest I patiently wait:  
+Come now and within me a new heart create;  
+To those who have sought Thee, Thou never said’st “No”—  
+Now wash me, and I shall be whiter than snow.
+
+#84
+Title: APO PENGA LYAKWA LESA
+Lyrics:
+
+1.  Apo penga lyakwa Lesa  
+Likolwika mu chalo,  
+Apo bukacha bwa lubuto tutu,  
+Apo abasalwa bakaya longana pe shilya.  
+
+<b>Apo aketa na mashina (x3)  
+Apo aketa na mashina ukabeko.</b>  
+
+2.  Ubushiku bwa kufinya  
+Apo abahwa bakema;  
+No kumono bukata bwa kwa Kristu;  
+Apo abasawa bakaya langana kwa Lesa,  
+Apo aketa na mashina nkabeko.  
+
+3.  Aleni tulelambela shikulu ifwe  
+Nshiku pe. Tuye landa ku bantu ifya mweo,  
+Nge milimo yapwa, ne fwe twaya mu chalo diya,  
+Apo aketa na mashina nkabeko.  
+
+#85
+Title: I AM SO GLAD THAT OUR FATHER IN HEAVEN<b>  
+Lyrics:
+1.  Ndesekela Tata wa mu mulu,  
+Anjebele fya kutemwa kwakwe;  
+Mu kalata náemonie fisuma,  
+Icácisna, Yesu alintemwa.  
+
+</b>Ndesekelela alintemwa, Yesu,  
+Yesu, alitemwa;  
+Ndeskelela alintemwa,  
+Yesu, alitemwa.*  
+
+2.  Nga namulaba no kwendauka,  
+Alentemwa pe nangula náuba;  
+Ndebwelela bwangu kwa katula,  
+Pa kvibukishe fyo alintemwa.  
+
+3.  Lwimbo kwałali ule nkaleimba,  
+Nga namona m’kuluma lkankała;  
+Muklałnałana kwakwe kwakula,  
+Ndesunguka, Yesu alinhemwa.  
+
+4.  Ndemutemwisha Yesu na mwane,  
+Anteniemwa, e co analubwila;  
+Amfulilo buki na mulapa,  
+Cine cine Yesu alinhemwa.  
+
+5.  Nga bambusać "Waistiba shani",  
+Nali "paniu Yesu amfullila";  
+Mupaśni wakwe anshimikila,  
+Anange fya Yesu alinhemwa.  
+
+6.  Nali na mutande pakwis"tóśna",  
+Ndecelekela nasansanuka;  
+Nombo mulwani afulumuka,  
+Co namweba, Yesu alinhemwa.
+
+#87
+Title: JESUS MY LORD
+Lyrics:
+1.  Shikulu Yesu ndekuta,  
+Kano mwangatwa natarwa,  
+Pusukulo mundetele,  
+Mumbule fintu ndi.  
+ 
+<b>Mumbule ifyo ndi (x2)  
+Yesu Kristu mwamtwillie  
+Mumbule ifyo ndi</b>  
+
+2.  Nga nanaka, nabipilwa,  
+Mwasumine umulopa,  
+Muncite co mwatemwa,  
+Mumbule fintu ndi.  
+
+3.  Mumone ine katula,  
+Muncijile co mwatemwa,  
+Kutendeke no kupwisha,  
+Mumbule fintu ndi.  
+
+4.  Nshikwete maka kucita,  
+Cintu cima kuitula,  
+Muntule pe, Imwe mweka,  
+Mumbule fintu ndi.
+
+#88
+Title: RETURN O WANDERER TO THY HOME  
+Lyrics:
+
+1.  Bwela mwana walubile,  
+Wiso alekwita;  
+Wiluba pe mulibi fi,  
+Wilaba mulanda;  
+<b>Bwela, bwela.</b>  
+
+2.  Bwela mwana, walubile,  
+Yesu alekwita;  
+Apapata no Mupashi,  
+Isa muno ragonda;  
+Bwela, bwela.  
+
+3.  Bwela mwana walubile,  
+Wiponafye nshita;  
+Ku mfwa fakuli no lusa,  
+E nshita atupa;  
+Bwela, bwela.
+
+#89
+Title: I HEAR THY WELCOME VOICE 
+Lyrics:
+1.  Ishwi naeumkva  
+Iya rijta kuimwe,  
+Ukunsamba no mulapa  
+Untu mwansumine.  
+
+<b>Yesu ndeisa  
+Kwisa kuli mwe  
+Musambe no mulapa  
+Untu mwanuma</b>  
+
+2.  Nangula ndi mubi,  
+Yesu anlamwisha,  
+Alefumya ulubembu  
+Alempela maka.  
+
+3.  Yesu alafwaya,  
+Mu kufernwa kwakwe,  
+Ne subilo alempela  
+Luse no mulende.  
+
+4.  Yesu alempela,  
+Maka mu mulima,  
+Ne cikuku alemtula  
+Amfyumya mü fibi.  
+
+5.  Yesu amfwillie  
+Pantu nabipilwa  
+Alemtwaya musubile  
+Multma wandi.  
+
+#90
+Title: LET THERE BE LOVE
+(No Abiding City Here) 
+Lyrics:
+Let there be love (hope)(joy) shared among us,  
+Let there be love (hope)(joy) in our hearts.  
+May now your love (hope)(joy) sweep this nation,  
+Cause us, oh Lord, to arise.  
+
+ Give us a fresh understanding  
+Of brotherly love that is real.  
+Let there be love (hope)(joy) shared among us,  
+Let there be love (hope)(joy).  
+TATUKWEÏE NG’ANDA KUNO*  
+
+Tatukweïe ngi anda kuno,  
+Tulefwaye, calo cilia;  
+Tatukweïe ubulanda,  
+Icalo cesu e cilia;  
+Icalo cesu e cilia.  
+
+Tatukweïe, ngi anda kuno,  
+Calo cesu chilesia;  
+Ni Zion, mfunu liva  
+Yabengeshima bwino pe,  
+Yabengeshima bwino pe.  
+
+Mwe calo candi chawama,  
+Basuma batusha cilva;  
+Nga pingaba na ma pindo,  
+Ine nkaya no kutusha,  
+Ine nkaya no kutusha.  
+
+Talala mutima wandi,  
+Inshita yakwe isuma;  
+Ndealia ubufwayo bwatwe,  
+Akampele citulo ‘ko,  
+Akampele citulo ‘ko.
+`;
+
+        // Parse the hymns from the text
+        function parseHymnText(text) {
+            const hymns = [];
+            const hymnBlocks = text.split(/(?=\n#\d+\s?)/g); // Split by lines starting with #number
+            hymnBlocks.forEach(block => {
+                const trimmedBlock = block.trim();
+                if (!trimmedBlock) return;
+                const lines = trimmedBlock.split('\n');
+                let number = null;
+                let title = '';
+                let lyrics = [];
+                let inLyricsSection = false;
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (line.startsWith('#')) {
+                        const numMatch = line.match(/^#(\d+)/);
+                        if (numMatch) {
+                            number = parseInt(numMatch[1], 10);
+                        }
+                    } else if (line.toLowerCase().startsWith('title:')) {
+                        title = line.substring('title:'.length).trim();
+                    } else if (line.toLowerCase().startsWith('lyrics')) {
+                        inLyricsSection = true;
+                    } else if (inLyricsSection) {
+                        lyrics.push(line);
+                    }
+                }
+                if (number !== null) {
+                    // Convert *...* to <b>...</b> for bold/italic support
+                    let cleanedLyrics = lyrics.join('\n').trim();
+                    cleanedLyrics = cleanedLyrics.replace(/\*(.*?)\*/gs, '<b>$1</b>');
+                    hymns.push({
+                        number: number,
+                        title: title,
+                        lyrics: cleanedLyrics
+                    });
+                }
+            });
+            return hymns;
+        }
+
+        const hymns = parseHymnText(fullHymnText);
+
+        // Get DOM elements
+        const searchBar = document.getElementById('searchBar');
+        const hymnListDiv = document.getElementById('hymnList');
+        const noResultsMessage = document.getElementById('noResults');
+        const fontSizeSlider = document.getElementById('fontSize');
+        const fontSizeValueSpan = document.getElementById('fontSizeValue');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const hymnModal = document.getElementById('hymnModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalLyrics = document.getElementById('modalLyrics');
+
+        // Initialize favorites from LocalStorage
+        let favorites = JSON.parse(localStorage.getItem('hymnFavorites')) || [];
+
+        /**
+         * Renders the given array of hymns into the hymn list container.
+         * @param {Array<Object>} hymnsToDisplay - The array of hymn objects to display.
+         */
+        function displayHymns(hymnsToDisplay) {
+            hymnListDiv.innerHTML = ''; // Clear current list
+
+            if (hymnsToDisplay.length === 0) {
+                noResultsMessage.classList.remove('hidden');
+                return;
+            } else {
+                noResultsMessage.classList.add('hidden');
+            }
+
+            hymnsToDisplay.forEach(hymn => {
+                const isFavorited = favorites.includes(hymn.number);
+                const hymnCard = document.createElement('div');
+                hymnCard.className = 'hymn-card';
+                hymnCard.innerHTML = `
+                    <div class="flex-grow" data-hymn-number="${hymn.number}">
+                        <h3>${hymn.number}. ${hymn.title}</h3>
+                        <p class="text-sm line-clamp-1">${hymn.lyrics.split('\n')[0]}</p>
+                    </div>
+                    <i class="favorite-btn ${isFavorited ? 'fa-solid' : 'fa-regular'} fa-heart ml-4" data-hymn-number="${hymn.number}"></i>
+                `;
+                hymnListDiv.appendChild(hymnCard);
+            });
+        }
+
+        /**
+         * Filters hymns based on the search input and updates the display.
+         */
+        function searchHymns() {
+            const query = searchBar.value.toLowerCase();
+            const filteredHymns = hymns.filter(hymn =>
+                hymn.number.toString().includes(query) ||
+                hymn.title.toLowerCase().includes(query) ||
+                hymn.lyrics.toLowerCase().includes(query)
+            );
+            displayHymns(filteredHymns);
+        }
+
+        /**
+         * Toggles a hymn's favorite status and updates LocalStorage.
+         * @param {number} hymnNumber - The number of the hymn to toggle.
+         * @param {HTMLElement} iconElement - The icon element to update.
+         */
+        function toggleFavorite(hymnNumber, iconElement) {
+            const index = favorites.indexOf(hymnNumber);
+            if (index > -1) {
+                // Remove from favorites
+                favorites.splice(index, 1);
+                iconElement.classList.remove('fa-solid', 'favorited');
+                iconElement.classList.add('fa-regular');
+            } else {
+                // Add to favorites
+                favorites.push(hymnNumber);
+                iconElement.classList.remove('fa-regular');
+                iconElement.classList.add('fa-solid', 'favorited');
+            }
+            localStorage.setItem('hymnFavorites', JSON.stringify(favorites));
+        }
+
+        /**
+         * Adjusts the base font size of the application.
+         * @param {number} size - The font size multiplier.
+         */
+        function adjustFontSize(size) {
+            document.documentElement.style.setProperty('--font-size-base', `${size}rem`);
+            document.documentElement.style.setProperty('--font-size-lg', `${size * 1.125}rem`);
+            document.documentElement.style.setProperty('--font-size-xl', `${size * 1.25}rem`);
+
+            // Update modal lyrics font size directly as it's a specific element
+            modalLyrics.style.fontSize = `${size}rem`;
+
+            fontSizeValueSpan.textContent = `${size.toFixed(1)}x`;
+            localStorage.setItem('fontSize', size);
+        }
+
+        /**
+         * Toggles dark mode on/off.
+         */
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDarkMode);
+        }
+
+        /**
+         * Shows the hymn detail modal with the selected hymn's content.
+         * @param {object} hymn - The hymn object to display in the modal.
+         */
+        function showHymnModal(hymn) {
+            modalTitle.textContent = `${hymn.number}. ${hymn.title}`;
+            modalLyrics.innerHTML = hymn.lyrics; // Use innerHTML to render <b> tags
+
+            // Apply current font size to modal lyrics when opening
+            const currentFontSize = parseFloat(localStorage.getItem('fontSize')) || 1.0;
+            modalLyrics.style.fontSize = `${currentFontSize}rem`;
+
+            hymnModal.classList.add('open');
+        }
+
+        /**
+         * Hides the hymn detail modal.
+         */
+        function hideHymnModal() {
+            hymnModal.classList.remove('open');
+        }
+
+        // --- Event Listeners ---
+
+        // Search bar input
+        searchBar.addEventListener('input', searchHymns);
+
+        // Hymn card clicks (for displaying full hymn or toggling favorite)
+        hymnListDiv.addEventListener('click', (event) => {
+            const target = event.target;
+            const hymnCardDiv = target.closest('.hymn-card');
+
+            if (!hymnCardDiv) return; // Click was not on a hymn card
+
+            const hymnNumberStr = target.dataset.hymnNumber || target.closest('[data-hymn-number]')?.dataset.hymnNumber;
+            const hymnNumber = parseInt(hymnNumberStr);
+
+            if (isNaN(hymnNumber)) return; // Ensure a valid hymn number is found
+
+            const selectedHymn = hymns.find(h => h.number === hymnNumber);
+
+            if (target.classList.contains('favorite-btn')) {
+                // Clicked on the favorite icon
+                if (selectedHymn) {
+                    toggleFavorite(hymnNumber, target);
+                }
+            } else if (selectedHymn) {
+                // Clicked on the hymn card itself (but not the favorite icon)
+                showHymnModal(selectedHymn);
+            }
+        });
+
+
+        // Font size slider input
+        fontSizeSlider.addEventListener('input', (event) => {
+            adjustFontSize(parseFloat(event.target.value));
+        });
+
+        // Dark mode toggle click
+        darkModeToggle.addEventListener('change', toggleDarkMode);
+
+        // Close modal button click
+        closeModalBtn.addEventListener('click', hideHymnModal);
+
+        // Close modal when clicking outside of it
+        hymnModal.addEventListener('click', (event) => {
+            if (event.target === hymnModal) {
+                hideHymnModal();
+            }
+        });
+
+        // --- Initial Load ---
+
+        // Load font size from LocalStorage
+        const savedFontSize = parseFloat(localStorage.getItem('fontSize'));
+        if (savedFontSize) {
+            fontSizeSlider.value = savedFontSize;
+            adjustFontSize(savedFontSize);
+        } else {
+            adjustFontSize(parseFloat(fontSizeSlider.value)); // Set initial value if none saved
+        }
+
+        // Load dark mode preference from LocalStorage
+        const savedDarkMode = localStorage.getItem('darkMode');
+        if (savedDarkMode === 'true') {
+            document.body.classList.add('dark-mode');
+            darkModeToggle.checked = true;
+        }
+
+        // Initial display of all hymns
+        displayHymns(hymns);
+
+        // Apply dark mode theme to Tailwind's colors if dark mode is active on load
+        // This is a small hack for the selection color as Tailwind doesn't dynamically update this with custom CSS variables
+        if (document.body.classList.contains('dark-mode')) {
+            document.body.classList.add('dark');
+        }
+        darkModeToggle.addEventListener('change', () => {
+            if (darkModeToggle.checked) {
+                document.body.classList.add('dark');
+            } else {
+                document.body.classList.remove('dark');
+            }
+        });
+    </script>
+
+<footer class="text-center text-sm text-text-color/60 py-6 border-t border-border-color">
+    MADE BY SGT TEMBO R
+</footer>
+
+</body>
+</html>
